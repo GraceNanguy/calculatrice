@@ -1,67 +1,112 @@
 import React, { useState } from 'react';
-import Bouton from './Bouton';
+import Button from './Bouton';
+import Historique from './History';
 
 function Calculator() {
-  const [displayValue, setDisplayValue] = useState('0');
+    const [display, setDisplay] = useState('');
+    const [history, setHistory] = useState('');
+    const [showHistory, setShowHistory] = useState(false);
+    const [showSpecialFunctions, setShowSpecialFunctions] = useState(false);
+    const handleOperatorClick = (value) => {
+        if (value === '=') {
+            try {
+                const result = evaluateExpression(display);
+                setHistory(`${display} = ${result}\n${history}`);
+                setDisplay(result.toString());
+            } catch (error) {
+                setDisplay('Error');
+            }
+        }
+        else if (value === 'scd') {
+            setShowSpecialFunctions(prevState => !prevState);
+        } 
+        else if (value === 'AC') { 
+            setDisplay('');
+        } 
+        else if (value === 'C') { 
+            setDisplay(display.slice(0, -1));
+        } 
+        else if (value === 'History') {
+            setShowHistory(true);
+        } 
+        else {
+            setDisplay(prevDisplay => prevDisplay + value);
+        }
+        
+    };
 
-  const updateDisplayValue = (newValue) => {
-    setDisplayValue(newValue);
-  };
+    const handleHideHistory = () => {
+        setShowHistory(false);
+    };
 
-  const addDigit = (digit) => {
-    if (displayValue === '0') {
-      updateDisplayValue(digit);
-    } else {
-      updateDisplayValue(displayValue + digit);
-    }
-  };
+    const evaluateExpression = (expression) => {
+        const specialFunctions = {
+            sin: 'Math.sin',
+            cos: 'Math.cos',
+            tan: 'Math.tan',
+            sqrt: 'Math.sqrt',
+            ln: 'Math.log',
+            lg: 'Math.log10',
+            pi: 'Math.PI',
+            'x!': 'factorial'
+        };
 
-  const clearDisplay = () => {
-    updateDisplayValue('0');
-  };
+        const replacedExpression = expression.replace(/(sin|cos|tan|ln|lg|sqrt|pi|x!)/g, match => specialFunctions[match] || match);
 
-  const addOperator = (operator) => {
-    updateDisplayValue(displayValue + operator);
-  };
+        return eval(replacedExpression);
+    };
 
-  const removeLastDigit = () => {
-    if (displayValue.length === 1) {
-      updateDisplayValue('0');
-    } else {
-      updateDisplayValue(displayValue.slice(0, -1));
-    }
-  };
+    const factorial = (n) => (n === 0 || n === 1) ? 1 : n * factorial(n - 1);
 
-  const calculateResult = () => {
-    try {
-      const result = eval(displayValue);
-      updateDisplayValue(result.toString());
-    } catch (error) {
-      updateDisplayValue('Error');
-    }
-  };
+    const buttons = [
+        ['AC', 'C', '/'], 
+        ['7', '8', '9', '*'], 
+        ['4', '5', '6', '-'], 
+        ['1', '2', '3', '+'],
+        ['scd', '0', '=', '.', ],
+    ];
+    
+    const primarySpecialFunctions = ['sin', 'cos', 'tan', 'ln', 'lg'];
+    const secondarySpecialFunctions = ['sqrt', 'pi', 'x!', '(', ')'];
 
-  return (
-    <div>
-      <div className="calculator-screen">{displayValue}</div>
-
-      <div className="calculator-buttons">
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
-          <Bouton key={digit} label={digit} onClick={() => addDigit(digit.toString())} />
-        ))}
-      </div>
-
-      <div className="calculator-buttons">
-        {['+', '-', '*', '/'].map((operator) => (
-          <Bouton key={operator} label={operator} onClick={() => addOperator(operator)} />
-        ))}
-        <Bouton label="=" onClick={calculateResult} />
-      </div>
-
-      <Bouton label="DEL" onClick={removeLastDigit} />
-      <Bouton label="AC" onClick={clearDisplay} />
-    </div>
-  );
+    return (
+        <div>
+            <div className="calculator">
+                <div className="display">{display}</div>
+                {showSpecialFunctions && (
+                    <div className="button-row">
+                        {primarySpecialFunctions.map((functionName) => (
+                            <Button key={functionName} label={functionName} onClick={() => handleOperatorClick(functionName)} />
+                        ))}
+                    </div>
+                )}
+                
+                <div className="buttons">
+                    {buttons.map((row, rowIndex) => (
+                        <div key={rowIndex} className="button-row">
+                            {row.map((button) => (
+                                <Button key={button} label={button} onClick={() => handleOperatorClick(button)} />
+                            ))}
+                        </div>
+                    ))}
+                    {showSpecialFunctions && (
+                        <div className="button-row">
+                            {secondarySpecialFunctions.map((functionName) => (
+                                <Button key={functionName} label={functionName} onClick={() => handleOperatorClick(functionName)} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+            <div className="history-toggle">
+                <Button label="History" onClick={() => setShowHistory(!showHistory)} />
+            </div>
+            {showHistory && <Historique history={history} onHide={handleHideHistory} />}
+        </div>
+    );
+    
+    
+    
 }
 
 export default Calculator;

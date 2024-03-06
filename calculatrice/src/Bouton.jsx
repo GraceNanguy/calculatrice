@@ -1,12 +1,12 @@
-// Button.jsx
+// Bouton.jsx
 import React from 'react';
 
-function Button({ onClick, label }) {
-  return (
-    <button onClick={onClick}>
-      {label}
-    </button>
-  );
+function Button({ label, onClick }) {
+    return (
+        <button className="bouton" onClick={() => onClick(label)}>
+            {label}
+        </button>
+    );
 }
 
 export default Button;

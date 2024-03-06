@@ -1,19 +1,12 @@
-// ThemeSelector.jsx
-import React, { useState } from 'react';
+// Themes.jsx
+import React from 'react';
 
-function ThemeSelector() {
-  const [theme, setTheme] = useState('light');
-
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-  };
-
-  return (
-    <div className="theme-selector">
-      <button onClick={toggleTheme}>Switch Theme</button>
-      {/* Ajoutez ici la logique pour basculer entre les thèmes */}
-    </div>
-  );
+function Themes({ theme, toggleTheme }) {
+    return (
+        <button className="theme-toggle" onClick={toggleTheme}>
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
+    );
 }
 
-export default ThemeSelector;
+export default Themes;
