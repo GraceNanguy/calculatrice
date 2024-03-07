@@ -2,62 +2,68 @@ import React, { useState } from 'react';
 import Button from './Bouton';
 import Historique from './History';
 
-function Calculator() {
+function Calculator({ theme }) {
     const [display, setDisplay] = useState('');
-    const [history, setHistory] = useState('');
+    const [history, setHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
     const [showSpecialFunctions, setShowSpecialFunctions] = useState(false);
+
+    // Gestionnaire de clic pour les opérateurs
     const handleOperatorClick = (value) => {
-        if (value === '=') {
-            try {
-                const result = evaluateExpression(display);
-                setHistory(`${display} = ${result}\n${history}`);
-                setDisplay(result.toString());
-            } catch (error) {
-                setDisplay('Error');
-            }
+        switch (value) {
+            case '=':
+                try {
+                    const result = evaluateExpression(display);
+                    const newHistory = `${display} = ${result}`;
+                    setHistory([newHistory, ...history]);
+                    setDisplay(result.toString());
+                } catch (error) {
+                    setDisplay('Error');
+                }
+                break;
+            case 'scd':
+                setShowSpecialFunctions(!showSpecialFunctions);
+                break;
+            case 'AC':
+                setDisplay('');
+                break;
+            case 'C':
+                setDisplay(display.slice(0, -1));
+                break;
+            case 'History':
+                setShowHistory(!showHistory);
+                break;
+            default:
+                setDisplay(display + value);
+                break;
         }
-        else if (value === 'scd') {
-            setShowSpecialFunctions(prevState => !prevState);
-        } 
-        else if (value === 'AC') { 
-            setDisplay('');
-        } 
-        else if (value === 'C') { 
-            setDisplay(display.slice(0, -1));
-        } 
-        else if (value === 'History') {
-            setShowHistory(true);
-        } 
-        else {
-            setDisplay(prevDisplay => prevDisplay + value);
-        }
-        
     };
 
+    // Gestionnaire de clic pour masquer l'historique
     const handleHideHistory = () => {
         setShowHistory(false);
     };
 
+    // Fonction pour évaluer une expression mathématique
     const evaluateExpression = (expression) => {
-        const specialFunctions = {
-            sin: 'Math.sin',
-            cos: 'Math.cos',
-            tan: 'Math.tan',
-            sqrt: 'Math.sqrt',
-            ln: 'Math.log',
-            lg: 'Math.log10',
-            pi: 'Math.PI',
-            'x!': 'factorial'
-        };
-
-        const replacedExpression = expression.replace(/(sin|cos|tan|ln|lg|sqrt|pi|x!)/g, match => specialFunctions[match] || match);
-
-        return eval(replacedExpression);
+        try {
+            // Remplace les occurrences des fonctions spéciales
+            expression = expression.replace(/sin/g, 'Math.sin');
+            expression = expression.replace(/cos/g, 'Math.cos');
+            expression = expression.replace(/tan/g, 'Math.tan');
+            expression = expression.replace(/ln/g, 'Math.log');
+            expression = expression.replace(/lg/g, 'Math.log10');
+    
+            // Évalue l'expression
+            const result = eval(expression);
+            return result;
+        } catch (error) {
+            throw new Error('Invalid expression');
+        }
     };
+    
 
-    const factorial = (n) => (n === 0 || n === 1) ? 1 : n * factorial(n - 1);
-
+    // Les boutons de la calculatrice
     const buttons = [
         ['AC', 'C', '/'], 
         ['7', '8', '9', '*'], 
@@ -66,12 +72,12 @@ function Calculator() {
         ['scd', '0', '=', '.', ],
     ];
     
+    // Fonctions spéciales primaires et secondaires
     const primarySpecialFunctions = ['sin', 'cos', 'tan', 'ln', 'lg'];
     const secondarySpecialFunctions = ['sqrt', 'pi', 'x!', '(', ')'];
 
     return (
-        <div>
-            <div className="calculator">
+        <div className={`calculator ${theme === 'dark' ? 'dark' : 'light'}`}>
                 <div className="display">{display}</div>
                 {showSpecialFunctions && (
                     <div className="button-row">
@@ -97,16 +103,13 @@ function Calculator() {
                         </div>
                     )}
                 </div>
-            </div>
+            
             <div className="history-toggle">
                 <Button label="History" onClick={() => setShowHistory(!showHistory)} />
             </div>
             {showHistory && <Historique history={history} onHide={handleHideHistory} />}
         </div>
     );
-    
-    
-    
 }
 
 export default Calculator;

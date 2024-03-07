@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Calculator from './Calculator';
 import Themes from './Thems';
-import './App.css'; 
+import './App.css'; // Importer le fichier de styles CSS
 
 function App() {
     const [theme, setTheme] = useState('light');
@@ -16,7 +16,6 @@ function App() {
         <div className={`app ${theme}`}>
             <Themes theme={theme} toggleTheme={toggleTheme} />
             <Calculator />
-            
         </div>
     );
 }
